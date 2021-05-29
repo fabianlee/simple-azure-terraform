@@ -1,7 +1,3 @@
-# install azure cli
-# https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-windows?tabs=azure-cli
-# for linux
-# https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-linux?pivots=apt
 
 terraform {
   required_version = ">= 0.14.0"
