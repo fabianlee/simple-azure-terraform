@@ -39,6 +39,8 @@ displayName=$(az ad app list --query [].displayName -o tsv)
 appUri=$(az ad app list --query [].identifierUris[0] -o tsv)
 echo "app id/name: $appId/$displayName"
 echo "app uri: $appUri"
+# to show: az ad sp show --id $appUri
+# to delete: az ad sp delete --id $appUri
 
 # insert variables into template, prepared as terraform values
 sedcmd=''
