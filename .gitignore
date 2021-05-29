@@ -1,0 +1,13 @@
+# keys
+id_rsa*
+
+# generated file with secrets
+terraform.tfvars
+
+# terraform files
+.terraform
+*.backup
+*.hcl
+*.tfstate
+*.lock.info
+

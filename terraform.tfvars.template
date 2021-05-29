@@ -1,0 +1,4 @@
+azure_subscription_id = "$subscriptionId"
+azure_client_id = "$appId"
+azure_client_secret = "$thepassword"
+azure_tenant_id = "$tenantId"
