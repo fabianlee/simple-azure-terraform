@@ -147,6 +147,8 @@ resource "azurerm_windows_virtual_machine" "example" {
   }
 }
 
+// to list available extensions
+// az vm extension image list --location westus -o table
 resource "azurerm_virtual_machine_extension" "startup_script" {
   name                 = "startup_script"
   virtual_machine_id   = azurerm_windows_virtual_machine.example.id
