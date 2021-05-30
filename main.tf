@@ -1,5 +1,3 @@
-# https://github.com/kpatnayakuni/azure-quickstart-terraform-configuration/blob/master/101-vm-with-rdp-port/main.tf
-# 
 
 resource "azurerm_resource_group" "example" {
   name     = "example-resources"
@@ -28,9 +26,6 @@ resource "azurerm_subnet" "example" {
 }
 
 # Security group for subnet 
-# https://github.com/kpatnayakuni/azure-quickstart-terraform-configuration/blob/master/101-vm-with-rdp-port/main.tf
-# https://stackoverflow.com/questions/52302520/provisioning-a-windows-vm-in-azure-with-winrm-port-5986-open
-# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_group
 resource "azurerm_network_security_group" "secgroup" {
   name                = "example-secgroup"
   resource_group_name = azurerm_resource_group.example.name
@@ -97,6 +92,23 @@ resource "azurerm_network_interface_security_group_association" "example" {
   network_security_group_id = azurerm_network_security_group.secgroup.id
 }
 
+# https://stackoverflow.com/questions/52302520/provisioning-a-windows-vm-in-azure-with-winrm-port-5986-open
+resource "random_id" "randomId" {
+    keepers = {
+        # Generate a new ID only when a new resource group is defined
+        resource_group = "${azurerm_resource_group.example.name}"
+    }
+    byte_length = 8
+}
+# Create storage account for boot diagnostics
+resource "azurerm_storage_account" "mystorageaccount" {
+    name                        = "diag${random_id.randomId.hex}"
+    resource_group_name         = azurerm_resource_group.example.name
+    location                    = azurerm_resource_group.example.location
+    account_tier                = "Standard"
+    account_replication_type    = "LRS"
+}
+
 resource "random_string" "winpassword" {
   length  = 12
   upper   = true
@@ -106,8 +118,6 @@ resource "random_string" "winpassword" {
   override_special = "!@#$%&"
 }
 
-# for powershell extension, https://gmusumeci.medium.com/how-to-bootstrapping-azure-vms-with-terraform-c8fdaa457836
-# basic examples, https://github.com/terraform-providers/terraform-provider-azurerm/blob/master/examples/virtual-machines/windows/vm-joined-to-active-directory/modules/domain-member/main.tf
 resource "azurerm_windows_virtual_machine" "example" {
   name                = "example-machine"
   resource_group_name = azurerm_resource_group.example.name
@@ -128,8 +138,29 @@ resource "azurerm_windows_virtual_machine" "example" {
   source_image_reference {
     publisher = "MicrosoftWindowsServer"
     offer     = "WindowsServer"
-    sku       = "2016-Datacenter"
+    sku       = "2019-Datacenter" # 2016 is EOL Jan 2022
     version   = "latest"
   }
+
+  boot_diagnostics {
+    storage_account_uri = "${azurerm_storage_account.mystorageaccount.primary_blob_endpoint}"
+  }
+}
+
+resource "azurerm_virtual_machine_extension" "startup_script" {
+  name                 = "startup_script"
+  virtual_machine_id   = azurerm_windows_virtual_machine.example.id
+  publisher            = "Microsoft.Compute"
+  type                 = "CustomScriptExtension"
+  type_handler_version = "1.9"
+
+ settings = <<SETTINGS
+    {
+    "commandToExecute": "powershell -encodedCommand ${textencodebase64(file("startup.ps1"), "UTF-16LE")}"
+    }
+    SETTINGS
+ #"script": "${base64encode(file("startup.ps1"))}"
+
+  depends_on = [ azurerm_windows_virtual_machine.example ]
 }
 
