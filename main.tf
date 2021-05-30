@@ -159,7 +159,6 @@ resource "azurerm_virtual_machine_extension" "startup_script" {
     "commandToExecute": "powershell -encodedCommand ${textencodebase64(file("startup.ps1"), "UTF-16LE")}"
     }
     SETTINGS
- #"script": "${base64encode(file("startup.ps1"))}"
 
   depends_on = [ azurerm_windows_virtual_machine.example ]
 }
