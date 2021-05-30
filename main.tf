@@ -147,6 +147,7 @@ resource "azurerm_windows_virtual_machine" "example" {
   }
 }
 
+// https://github.com/MicrosoftDocs/azure-docs/blob/8c53ac4371d482eda3d85819a4fb8dac09996a89/articles/virtual-machines/virtual-machines-windows-extensions-features.md
 // to list available extensions
 // az vm extension image list --location westus -o table
 resource "azurerm_virtual_machine_extension" "startup_script" {
